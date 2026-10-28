@@ -161,4 +161,4 @@ Optional for testing: turn off **Confirm email** under **Authentication → Sign
 
 ## 13. Author
 
-Built by **[Your Name]** as a college project.
+Built by **Srinivasan KR** as a college project.
