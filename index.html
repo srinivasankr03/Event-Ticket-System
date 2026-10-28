@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Utsav – Find events, hold your seats</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f2f6ff;--card:#fff;--ink:#0f1b3d;--mute:#5b6787;--line:#dbe3f5;--pink:#e11d74;--teal:#0d9488;--gold:#b45309;--bad:#c81e1e}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Sora,system-ui,sans-serif;line-height:1.5}
+.wrap{max-width:1100px;margin:0 auto;padding:0 20px}
+nav{background:var(--ink);color:#fff}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:62px;gap:10px}
+.brand{font-weight:800;font-size:22px;letter-spacing:.02em;background:none;border:0;color:#fff;cursor:pointer}
+.brand b{color:#ff5fa8}
+.links{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;font-size:14px}
+button{font:inherit;cursor:pointer}
+.btn{background:var(--pink);color:#fff;border:0;border-radius:10px;padding:10px 18px;font-weight:600}
+.btn:hover{filter:brightness(.92)}
+.btn.o{background:transparent;color:inherit;border:1px solid currentColor}
+.btn.d{background:transparent;color:var(--bad);border:1px solid var(--bad)}
+.btn.t{background:var(--teal)}
+.btn:disabled{opacity:.5}
+:focus-visible{outline:3px solid #ff9ccb;outline-offset:2px}
+.hero{padding:56px 0 28px}
+.hero h1{font-size:clamp(34px,6vw,58px);line-height:1.08;margin:0 0 14px;max-width:760px;letter-spacing:-.03em}
+.hero p{color:var(--mute);max-width:560px;font-size:18px;margin:0}
+.bar{display:flex;gap:10px;flex-wrap:wrap;margin:26px 0 14px}
+input,select,textarea{font:inherit;width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+.bar input{flex:1 1 260px;width:auto}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:#fff;color:var(--mute);padding:6px 15px;border-radius:99px;font-size:14px}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px;margin:24px 0 56px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:0;text-align:left;color:inherit;overflow:hidden;display:flex;flex-direction:column}
+.card:hover{border-color:var(--pink)}
+.top{padding:18px 18px 0;display:flex;justify-content:space-between;align-items:center}
+.ic{font-size:38px}
+.cat{font-size:12px;background:#e6fbf7;color:var(--teal);padding:3px 10px;border-radius:99px;font-weight:600}
+.cb{padding:12px 18px 18px;display:flex;flex-direction:column;gap:5px;flex:1}
+.cb h3{margin:0;font-size:18px;line-height:1.3}
+.when{color:var(--pink);font-weight:600;font-size:13px}
+.sm{color:var(--mute);font-size:14px}
+.ft{display:flex;justify-content:space-between;margin-top:auto;padding-top:10px;font-size:14px}
+.low{color:var(--gold)}.out{color:var(--bad)}
+h2{margin:36px 0 12px;font-size:26px}
+.row{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+.row h3{margin:0 0 3px;font-size:17px}
+.pill{font-size:12px;padding:2px 10px;border-radius:99px;border:1px solid currentColor;margin-left:6px}
+.s-held{color:var(--gold)}.s-confirmed{color:var(--teal)}.s-cancelled,.s-expired{color:var(--mute)}
+.timer{font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.empty,.setup{border:2px dashed var(--line);border-radius:14px;padding:36px;text-align:center;color:var(--mute);margin:24px 0}
+dialog{border:0;border-radius:18px;padding:0;width:min(500px,92vw);color:var(--ink)}
+dialog::backdrop{background:#0f1b3d99}
+.m{padding:24px}.m h2{margin:0 0 6px;font-size:22px}
+.m label{display:block;font-size:13px;color:var(--mute);margin:12px 0 5px}
+.m .end{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.lnk{background:none;border:0;color:var(--pink);text-decoration:underline;padding:0}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:10px;display:none;z-index:9;max-width:90vw}
+</style>
+</head>
+<body>
+<nav><div class="wrap">
+  <button class="brand" onclick="go('home')">UTS<b>AV</b></button>
+  <div class="links" id="links"></div>
+</div></nav>
+<main class="wrap" id="app"></main>
+
+<dialog id="dlg"><div class="m" id="box"></div></dialog>
+<div id="toast" role="status"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+const C=window.UTSAV_CONFIG||{};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const money=n=>n?"₹"+n.toLocaleString("en-IN"):"Free";
+const fmt=d=>new Date(d).toLocaleString("en-IN",{weekday:"short",day:"numeric",month:"short",hour:"numeric",minute:"2-digit"});
+const CATS=["Business","Food & Drink","Gaming","Music","Technology"];
+let db,session=null,events=[],left={},mine=[],view="home",cat="All",q="";
+
+function toast(t){const e=$("#toast");e.textContent=t;e.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display="none",3000)}
+const dlg=$("#dlg");
+function modal(html){$("#box").innerHTML=html;if(!dlg.open)dlg.showModal()}
+
+async function init(){
+  if(!C.url||!C.key){$("#app").innerHTML=`<div class="setup"><h2>Almost there</h2><p>Open <b>config.js</b> and paste your Supabase Project URL and anon key.</p></div>`;return}
+  db=supabase.createClient(C.url,C.key);
+  const {data}=await db.auth.getSession();session=data.session;
+  db.auth.onAuthStateChange((_e,s)=>{session=s;render()});
+  render();
+}
+async function loadEvents(){
+  const [e,a]=await Promise.all([db.from("events").select("*").order("starts_at"),db.rpc("event_availability")]);
+  if(e.error){toast(e.error.message);return}
+  events=e.data;left={};(a.data||[]).forEach(x=>left[x.event_id]=x.left_count);
+}
+async function loadMine(){
+  const {data,error}=await db.from("reservations").select("*, events(title,starts_at,price,venue)").order("id",{ascending:false});
+  if(error)toast(error.message);mine=data||[];
+}
+function go(v){if(v==="mine"&&!session){auth("in");return}view=v;render()}
+
+async function render(){
+  const u=session?.user;
+  $("#links").innerHTML=u?`<button class="btn o" onclick="go('home')">Events</button><button class="btn o" onclick="go('mine')">My tickets</button><button class="btn o" onclick="hostForm()">Host an event</button><button class="btn o" onclick="signOut()">Sign out</button>`
+   :`<button class="btn o" onclick="auth('in')">Sign in</button><button class="btn" onclick="auth('up')">Create account</button>`;
+  if(view==="mine"&&u){await loadMine();$("#app").innerHTML=mineHTML();return}
+  view="home";await loadEvents();$("#app").innerHTML=homeHTML();bind();
+}
+
+/* ---------- home ---------- */
+function homeHTML(){return `
+ <section class="hero"><h1>Find something worth showing up for.</h1>
+ <p>Pick an event, hold your tickets for 10 minutes, and confirm when you are ready. No rush at checkout, no double bookings.</p>
+ <div class="bar"><input id="q" type="search" placeholder="Search by event, place or topic" value="${esc(q)}" aria-label="Search events"></div>
+ <div class="chips">${["All",...CATS].map(c=>`<button class="chip ${c===cat?"on":""}" data-c="${esc(c)}">${esc(c)}</button>`).join("")}</div></section>
+ <div class="grid" id="grid">${cards()}</div>`}
+function cards(){
+  const t=q.trim().toLowerCase();
+  const l=events.filter(e=>(cat==="All"||e.category===cat)&&(!t||(e.title+e.venue+e.description).toLowerCase().includes(t)));
+  if(!l.length)return `<div class="empty" style="grid-column:1/-1">No events found. Try another word or category.</div>`;
+  return l.map(e=>{const n=left[e.id]??0,c=n===0?"out":n<=20?"low":"";
+   return `<button class="card" onclick="openEvent(${e.id})"><div class="top"><span class="ic">${esc(e.icon)}</span><span class="cat">${esc(e.category)}</span></div>
+   <div class="cb"><span class="when">${fmt(e.starts_at)}</span><h3>${esc(e.title)}</h3><span class="sm">${esc(e.venue)}</span>
+   <span class="sm">${esc(e.description)}</span><div class="ft"><b>${money(e.price)}</b><span class="${c}">${n===0?"Sold out":n+" left"}</span></div></div></button>`}).join("")}
+function bind(){
+  const r=()=>{$("#grid").innerHTML=cards();document.querySelectorAll(".chip").forEach(c=>c.classList.toggle("on",c.dataset.c===cat))};
+  $("#q").oninput=e=>{q=e.target.value;r()};
+  document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{cat=c.dataset.c;r()});
+}
+
+/* ---------- reserve ---------- */
+function openEvent(id){
+  const e=events.find(x=>x.id===id),n=left[id]??0,max=Math.min(6,n);
+  modal(`<h2>${esc(e.title)}</h2><div class="when">${fmt(e.starts_at)}</div><div class="sm">${esc(e.venue)}</div>
+  <p>${esc(e.description)}</p><p><b>${money(e.price)}</b> per ticket · ${n} left</p>
+  ${n?`<label for="qty">Tickets</label><select id="qty">${Array.from({length:max},(_,i)=>`<option>${i+1}</option>`).join("")}</select>
+  <p class="sm">We hold your tickets for 10 minutes. Confirm them in My tickets before the timer ends.</p>`:`<p class="out">This event is sold out.</p>`}
+  <div class="end"><button class="btn o" onclick="dlg.close()">Close</button>${n?`<button class="btn" id="rb" onclick="reserve(${id})">Hold tickets</button>`:""}</div>`);
+}
+async function reserve(id){
+  if(!session){dlg.close();auth("in");return}
+  $("#rb").disabled=true;
+  const {error}=await db.rpc("reserve_tickets",{p_event:id,p_qty:+$("#qty").value});
+  if(error){toast(error.message);$("#rb").disabled=false;return}
+  dlg.close();toast("Tickets held for 10 minutes.");go("mine");
+}
+
+/* ---------- my tickets ---------- */
+function eff(r){return r.status==="held"&&new Date(r.expires_at)<new Date()?"expired":r.status}
+function mineHTML(){
+  return `<h2>My tickets</h2>`+(mine.length?mine.map(r=>{const s=eff(r),e=r.events;
+   return `<div class="row"><div><h3>${esc(e.title)}<span class="pill s-${s}">${s}</span></h3>
+   <div class="sm">${r.qty} ticket${r.qty>1?"s":""} · ${money(e.price*r.qty)} · ${fmt(e.starts_at)}</div>
+   ${s==="held"?`<div class="sm">Held for <span class="timer" data-x="${r.expires_at}"></span></div>`:""}</div>
+   <div class="acts">${s==="held"?`<button class="btn t" onclick="act('confirm_reservation',${r.id},'Booking confirmed')">Confirm booking</button><button class="btn d" onclick="act('cancel_reservation',${r.id},'Hold released')">Release</button>`:""}
+   ${s==="confirmed"?`<button class="btn d" onclick="act('cancel_reservation',${r.id},'Booking cancelled')">Cancel</button>`:""}</div></div>`}).join(""):
+   `<div class="empty">No tickets yet. <button class="lnk" onclick="go('home')">Browse events</button></div>`);
+}
+async function act(fn,id,msg){
+  const {error}=await db.rpc(fn,{p_id:id});
+  if(error)toast(error.message);else toast(msg);render();
+}
+setInterval(()=>{
+  if(view!=="mine")return;
+  document.querySelectorAll(".timer").forEach(t=>{
+    const s=Math.floor((new Date(t.dataset.x)-Date.now())/1000);
+    if(s<=0){render();return}
+    t.textContent=String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
+  });
+},1000);
+
+/* ---------- host an event ---------- */
+function hostForm(){
+  modal(`<h2>Host an event</h2><form id="hf">
+  <label for="ht">Event name</label><input id="ht" required>
+  <div class="two"><div><label for="hc">Category</label><select id="hc">${CATS.map(c=>`<option>${c}</option>`).join("")}</select></div>
+  <div><label for="hi">Emoji</label><input id="hi" value="🎟️" maxlength="4"></div></div>
+  <label for="hv">Venue and city</label><input id="hv" required>
+  <div class="two"><div><label for="hd">Date and time</label><input id="hd" type="datetime-local" required></div>
+  <div><label for="hp">Price in ₹ (0 = free)</label><input id="hp" type="number" min="0" value="0"></div></div>
+  <label for="hn">Number of tickets</label><input id="hn" type="number" min="1" value="50">
+  <label for="hx">Description</label><textarea id="hx" rows="2"></textarea>
+  <div class="end"><button type="button" class="btn o" onclick="dlg.close()">Cancel</button><button class="btn">Publish event</button></div></form>`);
+  $("#hf").onsubmit=async ev=>{ev.preventDefault();
+    const {error}=await db.from("events").insert({title:$("#ht").value,category:$("#hc").value,icon:$("#hi").value||"🎟️",venue:$("#hv").value,
+      starts_at:new Date($("#hd").value).toISOString(),price:+$("#hp").value,capacity:+$("#hn").value,description:$("#hx").value});
+    if(error){toast(error.message);return}
+    dlg.close();toast("Event published.");go("home");};
+}
+
+/* ---------- sign in / up ---------- */
+function auth(mode){
+  const up=mode==="up";
+  modal(`<h2>${up?"Create your account":"Welcome back"}</h2><form id="af">
+  ${up?`<label for="an">Your name</label><input id="an" required>`:""}
+  <label for="ae">Email</label><input id="ae" type="email" required autocomplete="email">
+  <label for="ap">Password</label><input id="ap" type="password" minlength="6" required autocomplete="${up?"new-password":"current-password"}">
+  <div class="end"><button type="button" class="btn o" onclick="dlg.close()">Cancel</button><button class="btn">${up?"Create account":"Sign in"}</button></div></form>
+  <p class="sm">${up?"Have an account?":"New here?"} <button class="lnk" onclick="auth('${up?"in":"up"}')">${up?"Sign in":"Create an account"}</button></p>`);
+  $("#af").onsubmit=async ev=>{ev.preventDefault();
+    const email=$("#ae").value.trim(),password=$("#ap").value;
+    const r=up?await db.auth.signUp({email,password,options:{data:{name:$("#an").value}}}):await db.auth.signInWithPassword({email,password});
+    if(r.error){toast(r.error.message);return}
+    if(up&&!r.data.session){dlg.close();toast("Check your email to confirm your account, then sign in.");return}
+    dlg.close();toast("You are signed in.");};
+}
+async function signOut(){await db.auth.signOut();view="home";toast("Signed out.")}
+init();
+</script>
+</body>
+</html>
